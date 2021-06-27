@@ -1,0 +1,76 @@
+function dateFormat(date, fmt) {
+  if (!date || !fmt) return
+
+  // https://developers.weixin.qq.com/miniprogram/dev/reference/wxs/06datatype.html
+  // getDate()
+  // getDate(milliseconds)
+  // getDate(datestring)
+  // getDate(year, month[, date[, hours[, minutes[, seconds[, milliseconds]]]]])
+  var d = date
+
+  // 时间格式（只接受这几种格式的入参）：
+  // 数字时间戳-1622599714000，字符串时间戳-"1622599714000"
+  // 字符串日期-"2021-01-01 12:00:00" 字符串日期-"2021/01/01 12:00:00" 字符串日期-"2021 01 01 12:00:00"
+  // 日期类型-getDate()
+
+  if ((typeof d == 'string' || typeof d == 'number') && d - d == 0) { // 时间戳, fix: new Date - new Date === 0
+    // console.log('时间戳', d)
+    d = d - 0
+  } else if (typeof d == 'string') { // 字符串日期
+    // console.log('字符串日期', d)
+    d = d.replace(getRegExp('-', 'g'), '/')
+  } else if (typeof d.getFullYear == 'function') { // 日期
+    // console.log('日期类型', d)
+  }
+  d = getDate(d)
+  if (isNaN(Date.parse(d))) {
+    console.log('不能转成日期格式')
+    console.log('转换前 typeof date => ', typeof date, ', date => ', date, ', constructor => ', date ? date.constructor : 'none')
+    console.log('转换后 typeof d => ', typeof d, ', d => ', d, ', constructor => ', d ? d.constructor : 'none')
+    return date // 返回原始参数
+  }
+
+  var m = {
+    year: d.getFullYear(), // 年
+    month: d.getMonth() + 1, //月
+    date: d.getDate(), // 日
+    hour: d.getHours(), // 小时
+    minute: d.getMinutes(), // 分
+    second: d.getSeconds(), // 秒
+    ms: d.getMilliseconds(), // 毫秒
+    quarter: '一二三四'.charAt(Math.floor((d.getMonth() + 3) / 3)), // 季度
+    week: '日一二三四五六'.charAt(d.getDay()), // 周
+  }
+  // 第q季度 yyyy-MM-dd 周w hh:mm:ss:ms
+  // yyyy年MM月dd日 hh时mm分ss秒
+
+  // MM 应该放在 M 之前
+  return fmt
+    .replace('yyyy', m.year)
+    .replace('yy', leftPad(m.year, 2))
+    .replace('MM', leftPad(m.month, 2))
+    .replace('M', m.month)
+    .replace('dd', leftPad(m.date, 2))
+    .replace('d', m.date)
+    .replace('hh', leftPad(m.hour, 2))
+    .replace('h', m.hour)
+    .replace('mm', leftPad(m.minute, 2))
+    .replace('m', m.minute)
+    .replace('ss', leftPad(m.second, 2))
+    .replace('s', m.second)
+    .replace('ms', m.ms)
+    .replace('q', m.quarter)
+    .replace('w', m.week)
+}
+
+function leftPad(str, len) {
+  if (!str) return str
+  var _s = '000000000' + str
+  return _s.substring(_s.length - len)
+}
+
+module.exports = {
+  dateFormat: dateFormat,
+  leftPad: leftPad,
+}
+
